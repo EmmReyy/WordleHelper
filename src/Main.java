@@ -1,20 +1,23 @@
-    import java.util.ArrayList;
-    import java.util.Comparator;
-    import java.util.HashSet;
-    import java.util.Scanner;
+    import java.util.*;
 
     public class Main {
 
         static ArrayList<DictEntry> curatedDict = new ArrayList<>();
         static HashSet<Character> blackLetters = new HashSet<>();
-        static ArrayList<Character>yellowLetters = new ArrayList<>();
+        static HashMap<Character, ArrayList<Integer>> yellowLetters = new HashMap<>();
         static char[] fixedPos = {'*','*','*','*','*'};
         static FivesDictionary fives = new FivesDictionary("C:\\Users\\gobbl\\IdeaProjects\\WordleHelp\\fiveLetterWords.txt");
 
         public static boolean hasAllYellowLetters(DictEntry entry){
-            for(char letter : yellowLetters){
+            for(char letter : yellowLetters.keySet()){
                 if (!entry.charSet.contains(letter)){
                     return false;
+                } else {
+                    for (Integer ndx : yellowLetters.get(letter)){
+                        if (entry.chars[ndx] == letter){
+                            return false;
+                        }
+                    }
                 }
             }
             return true;
@@ -45,8 +48,11 @@
                 if (lineSplit[i].charAt(0) == '0'){
                     blackLetters.add(lineSplit[i].charAt(1));
                 }
+                //clunky and gross, fix later
                 else if (lineSplit[i].charAt(0) == '1'){
-                    yellowLetters.add(lineSplit[i].charAt(1));
+                    //yellowLetters.put(lineSplit[i].charAt(1), new ArrayList<>());
+                    yellowLetters.computeIfAbsent(lineSplit[i].charAt(1), k -> new ArrayList<>());
+                    yellowLetters.get(lineSplit[i].charAt(1)).add(i);
                 }
                 else if (lineSplit[i].charAt(0) == '2'){
                     fixedPos[i] = lineSplit[i].charAt(1);
@@ -72,6 +78,7 @@
             for (DictEntry entry : curatedDict){
                 if (!entry.hasDupes)best = entry;
             }
+            //return curatedDict.get(curatedDict.size()-1);
             return best;
         }
 
@@ -88,6 +95,7 @@
 
         public static void main(String[] args) {
             Scanner scanner = new Scanner(System.in);
+
             while (true){
                 System.out.println("Enter constraint with this format, 0X 1X 2X 1X 0X, where 0 is grey, 1 is yellow, and 2 is green");
                 String line = scanner.nextLine();
